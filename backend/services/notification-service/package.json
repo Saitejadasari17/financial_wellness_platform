@@ -1,0 +1,16 @@
+{
+  "name": "notification-service",
+  "version": "1.0.0",
+  "description": "Notification service with Redis queue workers",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "node app/main.js",
+    "dev": "node app/main.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "ioredis": "^5.8.1",
+    "nodemailer": "^7.0.6"
+  }
+}

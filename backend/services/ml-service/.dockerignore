@@ -1,0 +1,11 @@
+__pycache__
+.pytest_cache
+.venv
+venv
+saved_models
+notebooks
+data
+*.pyc
+.git
+.gitignore
+README.md

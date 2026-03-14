@@ -1,0 +1,45 @@
+name: CD Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to production host via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+            export APP_DIR="${{ secrets.PROD_APP_DIR }}"
+            export BRANCH="main"
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "App directory is not a git repo: $APP_DIR"
+              exit 1
+            fi
+            cd "$APP_DIR"
+            git fetch --all
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            chmod +x infrastructure/scripts/deploy.sh || true
+            ./infrastructure/scripts/deploy.sh production
+
+      - name: Health check
+        run: |
+          curl -fsS "${{ secrets.PROD_HEALTHCHECK_URL }}" >/dev/null

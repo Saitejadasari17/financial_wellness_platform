@@ -1,0 +1,45 @@
+name: CD Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: cd-staging
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging host via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+            export APP_DIR="${{ secrets.STAGING_APP_DIR }}"
+            export BRANCH="develop"
+            if [ ! -d "$APP_DIR/.git" ]; then
+              echo "App directory is not a git repo: $APP_DIR"
+              exit 1
+            fi
+            cd "$APP_DIR"
+            git fetch --all
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+            chmod +x infrastructure/scripts/deploy.sh || true
+            ./infrastructure/scripts/deploy.sh staging
+
+      - name: Health check
+        run: |
+          curl -fsS "${{ secrets.STAGING_HEALTHCHECK_URL }}" >/dev/null
