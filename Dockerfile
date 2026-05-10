@@ -3,7 +3,8 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install dependencies from frontend package files
-COPY frontend/package*.json ./
+COPY frontend/package.json ./
+COPY frontend/package-lock.json* ./
 RUN npm install
 
 # Copy frontend source
