@@ -2,13 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies from frontend package files
-COPY frontend/package.json ./
-COPY frontend/package-lock.json* ./
+# Build context is set to frontend on Render.
+COPY package.json ./
+COPY package-lock.json* ./
 RUN npm install
 
-# Copy frontend source
-COPY frontend/ ./
+# Copy app source from current context
+COPY . ./
 
 # Build Next.js app
 RUN npm run build
