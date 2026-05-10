@@ -2,13 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Build context is set to frontend on Render.
-COPY package.json ./
-COPY package-lock.json* ./
+# Build context is repository root; frontend app lives in /frontend.
+COPY frontend/package.json ./
+COPY frontend/package-lock.json* ./
 RUN npm install
 
-# Copy app source from current context
-COPY . ./
+# Copy frontend source
+COPY frontend/ ./
 
 # Build Next.js app
 RUN npm run build
